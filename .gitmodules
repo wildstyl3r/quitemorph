@@ -1,0 +1,6 @@
+[submodule "QGrypho"]
+	path = QGrypho
+	url = ../../../QGrypho/
+[submodule "isomorph"]
+	path = isomorph
+	url = ../../isomorph

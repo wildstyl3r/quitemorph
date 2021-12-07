@@ -4,6 +4,9 @@
 #include <QWidget>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QGrypho.hpp>
+#include <isomorph/isomorph.hpp>
+#include <isomorph/view.hpp>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Quitemorph; }
@@ -28,5 +31,12 @@ private slots:
 
 private:
     Ui::Quitemorph *ui;
+    AfterStable get_after_stable_mode();
+    QVector<QGrypho*> g_qgrypho_cache;
+    QVector<QGrypho*> h_qgrypho_cache;
+    QGrypho g_drawer;
+    QGrypho h_drawer;
+    Isomorph* test = nullptr;
+    bool cache_valid;
 };
 #endif // QUITEMORPH_H
