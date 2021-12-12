@@ -29,11 +29,24 @@ private slots:
 
     void on_start_button_clicked();
 
+    void on_graphics_stateChanged(int arg1);
+
+    void on_show_g_clicked();
+
+    void on_show_h_clicked();
+
+    void on_g_path_textChanged(const QString &arg1);
+
+    void on_h_path_textChanged(const QString &arg1);
+
 private:
     Ui::Quitemorph *ui;
+    Graph g, h;
     AfterStable get_after_stable_mode();
     QVector<QGrypho*> g_qgrypho_cache;
     QVector<QGrypho*> h_qgrypho_cache;
+    QString current_g;
+    QString current_h;
     QGrypho g_drawer;
     QGrypho h_drawer;
     Isomorph* test = nullptr;

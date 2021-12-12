@@ -1,6 +1,6 @@
 [submodule "QGrypho"]
 	path = QGrypho
-	url = ../../../QGrypho/
+	url = git://github.com/wildstyl3r/QGrypho
 [submodule "isomorph"]
 	path = isomorph
-	url = ../../isomorph
+	url = git://github.com/wildstyl3r/isomorph
