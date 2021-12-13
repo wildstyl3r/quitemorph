@@ -6,7 +6,6 @@ Quitemorph::Quitemorph(QWidget *parent)
     , ui(new Ui::Quitemorph)
 {
     ui->setupUi(this);
-    ui->plainTextEdit->setVisible(false);
 }
 
 Quitemorph::~Quitemorph()
@@ -31,7 +30,7 @@ void Quitemorph::on_output_button_clicked()
                 QFileDialog::getSaveFileName(this,
                                              tr("Select export file"),
                                              "",
-                                             tr("Canonical spanning web (*.qsw *.csw);;Quitemorph testing report (*.mtr)")));
+                                             tr("Quitemorph testing report (*.mtr)")));
 }
 
 void Quitemorph::on_start_button_clicked()
@@ -109,20 +108,30 @@ void Quitemorph::on_start_button_clicked()
 
     //отчеты:
 
-    QString p = "(";
-    bool first = true;
-    for (auto& e : test->perm()){
-        if (first)
-            first = false;
-        else
-            p += ", ";
-        p += QString::number(e);
+    QString result;
+    if(test->perm().size() == 0){
+        result = "G и H не равны";
+    } else {
+        result = "H отображается на G: (";
+        bool first = true;
+        for (auto& e : test->perm()){
+            if (first)
+                first = false;
+            else
+                result += ", ";
+            result += QString::number(e);
+        }
+        result += ")";
     }
-    p += ")\n";
+
+    ui->result_label->setText(result);
 
     QString tree_sets;
     for (int i = 0; i < 2; ++i){
-        tree_sets += "Деревья " + QString(!i?"G":"H") + " по вершинам:\n";
+        QString name = QString(!i?"G":"H");
+        tree_sets += "Итераций перекраски графа " + name + ": " + QString::number((*test)[i].iterations()) + '\n';
+        tree_sets += "Затрачено времени: " + QString::number(std::chrono::duration_cast<std::chrono::milliseconds>((*test)[i].time()).count())  + "ms\n";
+        tree_sets += "Деревья " + name + " по вершинам:\n";
         for (auto& c : (*test)[i].classes()){
             tree_sets += '(';
             bool first = true;
@@ -143,8 +152,15 @@ void Quitemorph::on_start_button_clicked()
         tree_sets += '\n';
     }
 
-    ui->plainTextEdit->setPlainText((test->perm().size() == 0 ? "G и H не равны\n" : "H отображается на G: " + p) + tree_sets);
-    ui->plainTextEdit->setVisible(true);
+    if(ui->output_path->text() != ""){
+        QFile file(ui->output_path->text());
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)){
+            QTextStream out(&file);
+            out << result + '\n' + tree_sets;
+        } else {
+            ui->result_label->setText(ui->result_label->text() + "; не удалось сохранить подробный отчет");
+        }
+    }
 }
 
 AfterStable Quitemorph::get_after_stable_mode()

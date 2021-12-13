@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTextStream>
 #include <QGrypho.hpp>
 #include <isomorph/isomorph.hpp>
 #include <isomorph/view.hpp>
