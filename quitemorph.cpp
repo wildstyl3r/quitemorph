@@ -78,43 +78,8 @@ void Quitemorph::on_start_button_clicked()
         g_drawer.text = "итераций перекраски: " + QString::number(test->g().iterations()) + "\n" +
                 "время: " + QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(test->g().time()).count()) + "мс\n";
 
-        g_drawer.setDblClick([&](Graph* g, int v, bool left){
-            if (g->has(v)){
-                if (left){
-                    if(!g_qgrypho_cache[v]->isGraphSet()){
-                        g_qgrypho_cache[v]->drawGraph(test->g().views()[v]->lexmst_tree());
-                        g_qgrypho_cache[v]->highlight(QVector<vertex>(1,v));
-                    }
-                    g_qgrypho_cache[v]->setWindowTitle("G : " + QString::fromStdString(test->g().views()[v]->id(v)+
-                                                                      " ("+std::to_string(test->g().views()[v]->color(v))+")"));
-                    g_qgrypho_cache[v]->show();
-                }
-            }
-        });
-        g_drawer.setSelect([&](Graph* g, int v){
-            if (g->has(v)){
-                QVector<edge> es;
-                if(!g_drawer.highlighted(v)){
-                    g_drawer.highlight(QVector<vertex>(1,v));
-                    for(vertex i = 0; i < test->g().views()[v]->V().size(); ++i){
-                        for(vertex j = 0; j < test->g().views()[v]->V().size(); ++j){
-                            if (test->g().views()[v]->has({i,j})){
-                                es.push_back(edge({i,j}));
-                            }
-                        }
-                    }
-                    g_drawer.highlight(es);
-                } else {
-                    for(edge& e : test->g().views()[v]->lexmst_edges()){
-                        es.push_back(edge(e));
-                    }
-                    g_drawer.highlight(es);
-                }
-            } else {
-                g_drawer.highlight(QVector<vertex>());
-                g_drawer.highlight(QVector<edge>());
-            }
-        });
+        g_drawer.setDblClick([&](Graph* g, int v, bool left){ openTree(g, v, left, false); });
+        g_drawer.setSelect([&](Graph* g, int v){ highlight(g,v,false); });
         g_drawer.setWindowTitle("G @ " + ui->g_path->text());
         ///////////////-------------------------------------------------
         for(auto &qg : h_qgrypho_cache){
@@ -129,43 +94,8 @@ void Quitemorph::on_start_button_clicked()
         h_drawer.text = "итераций перекраски: " + QString::number(test->h().iterations()) + "\n" +
                 "время: " + QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(test->h().time()).count()) + "мс\n";
 
-        h_drawer.setDblClick([&](Graph* w, int v, bool left){
-            if (w->has(v)){
-                if (left){
-                    if(!h_qgrypho_cache[v]->isGraphSet()){
-                        h_qgrypho_cache[v]->drawGraph(test->h().views()[v]->lexmst_tree());
-                        h_qgrypho_cache[v]->highlight(QVector<vertex>(1,v));
-                        h_qgrypho_cache[v]->setWindowTitle("H : " + QString::fromStdString(test->h().views()[v]->id(v)+
-                                                                  " ("+std::to_string(test->h().views()[v]->color(v))+")"));
-                    }
-                    h_qgrypho_cache[v]->show();
-                }
-            }
-        });
-        h_drawer.setSelect([&](Graph* w, int v){
-            if (w->has(v)){
-                QVector<edge> es;
-                if(!h_drawer.highlighted(v)){
-                    h_drawer.highlight(QVector<vertex>(1,v));
-                    for(vertex i = 0; i < test->h().views()[v]->V().size(); ++i){
-                        for(vertex j = 0; j < test->h().views()[v]->V().size(); ++j){
-                            if (test->h().views()[v]->has({i,j})){
-                                es.push_back(edge({i,j}));
-                            }
-                        }
-                    }
-                    h_drawer.highlight(es);
-                } else {
-                    for(edge& e : test->h().views()[v]->lexmst_edges()){
-                        es.push_back(edge(e));
-                    }
-                    h_drawer.highlight(es);
-                }
-            } else {
-                h_drawer.highlight(QVector<vertex>());
-                h_drawer.highlight(QVector<edge>());
-            }
-        });
+        h_drawer.setDblClick([&](Graph* w, int v, bool left){ openTree(w, v, left, true); });
+        h_drawer.setSelect([&](Graph* w, int v){ highlight(w,v,true); });
         h_drawer.setWindowTitle("H @ " + ui->h_path->text());
     }
 
@@ -259,4 +189,47 @@ void Quitemorph::on_h_path_textChanged(const QString &arg1)
 {
     ui->show_h->setEnabled(arg1.trimmed() == current_h && current_h != "");
     ui->progress_h->setValue(arg1.trimmed() == current_h && current_h != "");
+}
+
+void Quitemorph::highlight(Graph *w, int v, bool graph_H){
+    ClassificationReport& report = (*test)[graph_H];
+    QGrypho& drawer = graph_H ? h_drawer : g_drawer;
+    if (w->has(v)){
+        QVector<edge> es;
+        if(!drawer.highlighted(v)){
+            drawer.highlight(QVector<vertex>(1,v));
+            for(vertex i = 0; i < report.views()[v]->V().size(); ++i){
+                for(vertex j = 0; j < report.views()[v]->V().size(); ++j){
+                    if (report.views()[v]->has({i,j})){
+                        es.push_back(edge({i,j}));
+                    }
+                }
+            }
+            drawer.highlight(es);
+        } else {
+            for(edge& e : report.views()[v]->lexmst_edges()){
+                es.push_back(edge(e));
+            }
+            drawer.highlight(es);
+        }
+    } else {
+        drawer.highlight(QVector<vertex>());
+        drawer.highlight(QVector<edge>());
+    }
+}
+
+void Quitemorph::openTree(Graph *w, int v, bool left, bool graph_H){
+    QVector<QGrypho*>& qgrypho_cache = graph_H ? h_qgrypho_cache : g_qgrypho_cache;
+    ClassificationReport& report = (*test)[graph_H];
+    if (w->has(v)){
+        if (left){
+            if(!qgrypho_cache[v]->isGraphSet()){
+                qgrypho_cache[v]->drawGraph(report.views()[v]->lexmst_tree());
+                qgrypho_cache[v]->highlight(QVector<vertex>(1,v));
+            }
+            qgrypho_cache[v]->setWindowTitle((graph_H ? "H : " : "G : ") + QString::fromStdString(report.views()[v]->id(v)+
+                                                              " ("+std::to_string(report.views()[v]->color(v))+")"));
+            qgrypho_cache[v]->show();
+        }
+    }
 }

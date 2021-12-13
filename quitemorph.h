@@ -51,5 +51,7 @@ private:
     QGrypho h_drawer;
     Isomorph* test = nullptr;
     bool cache_valid;
+    void highlight(Graph* w, int v, bool graph_H);
+    void openTree(Graph* w, int v, bool left, bool graph_H);
 };
 #endif // QUITEMORPH_H
