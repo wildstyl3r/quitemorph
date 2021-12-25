@@ -16,12 +16,12 @@ Quitemorph::~Quitemorph()
 
 void Quitemorph::on_g_button_clicked()
 {
-    ui->g_path->setText(QFileDialog::getOpenFileName(this, tr("Open graph file"), "~", tr("Graph files ((*.cgf *.tgf *.dot)")));
+    ui->g_path->setText(QFileDialog::getOpenFileName(this, tr("Open graph file"), "~", tr("Graph files ((*.cgf *.tgf *.dot *.*)")));
 }
 
 void Quitemorph::on_h_button_clicked()
 {
-    ui->h_path->setText(QFileDialog::getOpenFileName(this, tr("Open graph file"), "~", tr("Graph files (*.cgf *.tgf *.dot)")));
+    ui->h_path->setText(QFileDialog::getOpenFileName(this, tr("Open graph file"), "~", tr("Graph files (*.cgf *.tgf *.dot *.*)")));
 }
 
 void Quitemorph::on_output_button_clicked()
@@ -47,20 +47,28 @@ void Quitemorph::on_start_button_clicked()
     ui->progress_h->setRange(0, h.V().size()*3);
     ui->progress_h->setValue(0);
     if (ui->color_from_scratch->isChecked()){
-        for(auto& c : g.colors()){
-            c = 0;
+        for(vertex v = 0; v < g.size(); ++v){
+            g.set_color(v, g.V().size());
         }
-        for(auto& c : h.colors()){
-            c = 0;
+        for(vertex v = 0; v < h.size(); ++v){
+            h.set_color(v, h.V().size());
         }
+//        for(auto& c : g.colors()){
+//            c = 0;
+//        }
+//        for(auto& c : h.colors()){
+//            c = 0;
+//        }
     }
 
     test = new Isomorph(g, h, get_after_stable_mode(),
-    [&](){
+    [&](bool finished){
         ui->progress_g->setValue(ui->progress_g->value() + 1);
+        if (finished) ui->show_g->setEnabled(true);
     },
-    [&](){
+    [&](bool finished){
         ui->progress_h->setValue(ui->progress_h->value() + 1);
+        if (finished) ui->show_h->setEnabled(true);
     }
     );
 
